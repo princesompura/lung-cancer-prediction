@@ -15,10 +15,11 @@ numerical_cols = ['age', 'bmi', 'cholesterol_level', 'diagnosis_date', 'end_trea
 categorical_cols = ['gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                     'hypertension', 'asthma', 'cirrhosis', 'other_cancer', 'treatment_type']
 
-# ✅ Handle unseen labels by adding them to encoder
+# ✅ Handle unseen labels gracefully
 def update_encoder(encoder, value):
     if value not in encoder.classes_:
-        encoder.classes_ = np.append(encoder.classes_, value)
+        print(f"\n⚠️ Unknown value '{value}' for encoder — mapping to default value!")
+        value = encoder.classes_[0]  # Use the first class as a fallback
     return encoder.transform([value])[0]
 
 @app.route('/')
@@ -27,14 +28,23 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # ✅ Ensure Content-Type is JSON
     if request.content_type != 'application/json':
         return jsonify({'error': 'Content-Type must be application/json'}), 415
 
     try:
-        # ✅ Get input data from request
         data = request.get_json()
         input_data = pd.DataFrame(data, index=[0])
+
+        # ✅ Normalize input values to match training format
+        input_data['gender'] = input_data['gender'].iloc[0].capitalize()
+        input_data['country'] = input_data['country'].iloc[0].replace('USA', 'United States')
+        input_data['family_history'] = input_data['family_history'].iloc[0].capitalize()
+        input_data['smoking_status'] = input_data['smoking_status'].iloc[0].title()
+        input_data['hypertension'] = 1 if input_data['hypertension'].iloc[0].lower() == 'yes' else 0
+        input_data['asthma'] = 1 if input_data['asthma'].iloc[0].lower() == 'yes' else 0
+        input_data['cirrhosis'] = 1 if input_data['cirrhosis'].iloc[0].lower() == 'yes' else 0
+        input_data['other_cancer'] = 1 if input_data['other_cancer'].iloc[0].lower() == 'yes' else 0
+        input_data['treatment_type'] = input_data['treatment_type'].iloc[0].title()
 
         # ✅ Encode categorical data
         for col in categorical_cols:
@@ -47,21 +57,20 @@ def predict():
         # ✅ Scale numerical data
         input_data[numerical_cols] = scaler.transform(input_data[numerical_cols])
 
-        # ✅ Predict using the best model
+        # ✅ Predict using Logistic Regression
         if hasattr(best_model, 'predict_proba'):
             probability = best_model.predict_proba(input_data)[:, 1][0]
-            prediction = 1 if probability > 0.2 else 0  # Threshold increased to 0.2
+            print(f"\n✅ Predicted Probability for 'Survived': {probability}")
+            prediction = 1 if probability > 0.35 else 0
         else:
             prediction = best_model.predict(input_data)[0]
 
-        # ✅ Return prediction result
         result = 'Survived' if prediction == 1 else 'Not Survived'
         return jsonify({'prediction': result})
 
     except Exception as e:
         return jsonify({'error': str(e)})
 
-# ✅ Use PORT from environment for deployment (Render/Heroku)
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
