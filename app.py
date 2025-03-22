@@ -50,7 +50,7 @@ def predict():
         # ✅ Predict using the best model
         if hasattr(best_model, 'predict_proba'):
             probability = best_model.predict_proba(input_data)[:, 1][0]
-            prediction = 1 if probability > 0.35 else 0  # Threshold increased to 0.35
+            prediction = 1 if probability > 0.2 else 0  # Threshold increased to 0.2
         else:
             prediction = best_model.predict(input_data)[0]
 
