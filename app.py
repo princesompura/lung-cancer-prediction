@@ -6,7 +6,6 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
-# Allow CORS for local development and deployed frontend
 CORS(app, resources={
     r"/*": {
         "origins": ["http://localhost:5173", "https://lung-cancer-frontend.onrender.com"],
@@ -23,6 +22,8 @@ label_encoders = joblib.load('models/label_encoders.pkl')
 numerical_cols = ['age', 'bmi', 'cholesterol_level', 'diagnosis_date', 'end_treatment_date']
 categorical_cols = ['gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                     'hypertension', 'asthma', 'cirrhosis', 'other_cancer', 'treatment_type']
+# Define the expected feature order (same as during training)
+expected_features = numerical_cols + categorical_cols
 
 def update_encoder(encoder, value):
     if value not in encoder.classes_:
@@ -46,6 +47,7 @@ def predict():
         input_data = pd.DataFrame(data, index=[0])
         print("Input data as DataFrame:", input_data.to_dict())
 
+        # Normalize input values to match training format
         input_data['gender'] = input_data['gender'].iloc[0].capitalize()
         input_data['country'] = input_data['country'].iloc[0].replace('USA', 'United States')
         input_data['family_history'] = input_data['family_history'].iloc[0].capitalize()
@@ -57,17 +59,27 @@ def predict():
         input_data['treatment_type'] = input_data['treatment_type'].iloc[0].title()
         print("After normalization:", input_data.to_dict())
 
+        # Encode categorical data
         for col in categorical_cols:
             input_data[col] = update_encoder(label_encoders[col], input_data[col].iloc[0])
         print("After encoding categorical data:", input_data.to_dict())
 
+        # Convert dates to numerical timestamps
         input_data['diagnosis_date'] = pd.to_datetime(input_data['diagnosis_date']).astype(int) // 10**9
         input_data['end_treatment_date'] = pd.to_datetime(input_data['end_treatment_date']).astype(int) // 10**9
         print("After converting dates:", input_data.to_dict())
 
-        input_data[numerical_cols] = scaler.transform(input_data[numerical_cols])
+        # Scale numerical data
+        input_data_numerical = input_data[numerical_cols]  # Select numerical columns in the correct order
+        input_data_numerical = scaler.transform(input_data_numerical)
+        input_data[numerical_cols] = input_data_numerical
         print("After scaling numerical data:", input_data.to_dict())
 
+        # Reorder input_data to match the expected feature order
+        input_data = input_data[expected_features]
+        print("After reordering features:", input_data.to_dict())
+
+        # Predict using Logistic Regression
         if hasattr(best_model, 'predict_proba'):
             probability = best_model.predict_proba(input_data)[:, 1][0]
             print(f"\n Predicted Probability for 'Survived': {probability}")
