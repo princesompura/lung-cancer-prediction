@@ -3,8 +3,10 @@ import pandas as pd
 import joblib
 import numpy as np
 import os
+from flask_cors import CORS  # Added import for CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load Models
 best_model = joblib.load('models/best_model.pkl')

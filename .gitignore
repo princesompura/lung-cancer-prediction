@@ -1,2 +1,10 @@
 # Ignore Python virtual environment
 venv/
+
+# Existing backend ignores (if any)
+__pycache__/
+*.pyc
+
+# Frontend ignores
+frontend/node_modules/
+frontend/dist/
