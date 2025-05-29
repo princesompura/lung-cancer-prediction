@@ -22,8 +22,8 @@ label_encoders = joblib.load('models/label_encoders.pkl')
 numerical_cols = ['age', 'bmi', 'cholesterol_level', 'diagnosis_date', 'end_treatment_date']
 categorical_cols = ['gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                     'hypertension', 'asthma', 'cirrhosis', 'other_cancer', 'treatment_type']
-# Define the expected feature order (same as during training)
 expected_features = numerical_cols + categorical_cols
+print("Expected features for model:", expected_features)
 
 def update_encoder(encoder, value):
     if value not in encoder.classes_:
@@ -45,6 +45,7 @@ def predict():
         print("Received request data:", request.get_json())
         data = request.get_json()
         input_data = pd.DataFrame(data, index=[0])
+        print("Input data columns:", list(input_data.columns))
         print("Input data as DataFrame:", input_data.to_dict())
 
         # Normalize input values to match training format
@@ -57,26 +58,34 @@ def predict():
         input_data['cirrhosis'] = 1 if input_data['cirrhosis'].iloc[0].lower() == 'yes' else 0
         input_data['other_cancer'] = 1 if input_data['other_cancer'].iloc[0].lower() == 'yes' else 0
         input_data['treatment_type'] = input_data['treatment_type'].iloc[0].title()
+        print("After normalization - columns:", list(input_data.columns))
         print("After normalization:", input_data.to_dict())
 
         # Encode categorical data
         for col in categorical_cols:
             input_data[col] = update_encoder(label_encoders[col], input_data[col].iloc[0])
+        print("After encoding categorical data - columns:", list(input_data.columns))
         print("After encoding categorical data:", input_data.to_dict())
 
         # Convert dates to numerical timestamps
         input_data['diagnosis_date'] = pd.to_datetime(input_data['diagnosis_date']).astype(int) // 10**9
         input_data['end_treatment_date'] = pd.to_datetime(input_data['end_treatment_date']).astype(int) // 10**9
+        print("After converting dates - columns:", list(input_data.columns))
         print("After converting dates:", input_data.to_dict())
 
         # Scale numerical data
-        input_data_numerical = input_data[numerical_cols]  # Select numerical columns in the correct order
+        print("Numerical columns for scaling:", numerical_cols)
+        input_data_numerical = input_data[numerical_cols]
+        print("Input data for scaler - columns:", list(input_data_numerical.columns))
         input_data_numerical = scaler.transform(input_data_numerical)
         input_data[numerical_cols] = input_data_numerical
+        print("After scaling numerical data - columns:", list(input_data.columns))
         print("After scaling numerical data:", input_data.to_dict())
 
         # Reorder input_data to match the expected feature order
+        print("Reordering to match expected features:", expected_features)
         input_data = input_data[expected_features]
+        print("After reordering features - columns:", list(input_data.columns))
         print("After reordering features:", input_data.to_dict())
 
         # Predict using Logistic Regression
