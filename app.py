@@ -19,10 +19,14 @@ best_model = joblib.load('models/best_model.pkl')
 scaler = joblib.load('models/scaler.pkl')
 label_encoders = joblib.load('models/label_encoders.pkl')
 
+# Define columns in the exact order as used during training (from train.ipynb)
 numerical_cols = ['age', 'bmi', 'cholesterol_level', 'diagnosis_date', 'end_treatment_date']
 categorical_cols = ['gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                     'hypertension', 'asthma', 'cirrhosis', 'other_cancer', 'treatment_type']
-expected_features = numerical_cols + categorical_cols
+# Match the order from train.ipynb: X = data.drop(['id', 'survived'], axis=1)
+expected_features = ['age', 'gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
+                     'bmi', 'cholesterol_level', 'hypertension', 'asthma', 'cirrhosis', 'other_cancer',
+                     'treatment_type', 'diagnosis_date', 'end_treatment_date']
 print("Expected features for model:", expected_features)
 
 def update_encoder(encoder, value):
