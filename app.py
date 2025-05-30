@@ -94,7 +94,7 @@ def predict():
         if hasattr(best_model, 'predict_proba'):
             probability = best_model.predict_proba(input_data)[:, 1][0]
             print(f"\n Predicted Probability for 'Survived': {probability}")
-            prediction = 1 if probability > 0.35 else 0
+            prediction = 1 if probability > 0.5 else 0  # Change threshold to 0.5
         else:
             prediction = best_model.predict(input_data)[0]
         print("Prediction:", prediction)
