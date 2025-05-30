@@ -7,4 +7,3 @@ __pycache__/
 
 # Frontend ignores
 frontend/node_modules/
-frontend/dist/
