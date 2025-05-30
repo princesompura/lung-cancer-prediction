@@ -1,15 +1,17 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+// /frontend/src/App.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <ErrorBoundary>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
         </Routes>
-      </div>
-    </Router>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
