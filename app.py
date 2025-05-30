@@ -23,7 +23,6 @@ label_encoders = joblib.load('models/label_encoders.pkl')
 numerical_cols = ['age', 'bmi', 'cholesterol_level', 'diagnosis_date', 'end_treatment_date']
 categorical_cols = ['gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                     'hypertension', 'asthma', 'cirrhosis', 'other_cancer', 'treatment_type']
-# Match the order from train.ipynb: X = data.drop(['id', 'survived'], axis=1)
 expected_features = ['age', 'gender', 'country', 'cancer_stage', 'family_history', 'smoking_status',
                      'bmi', 'cholesterol_level', 'hypertension', 'asthma', 'cirrhosis', 'other_cancer',
                      'treatment_type', 'diagnosis_date', 'end_treatment_date']
@@ -77,20 +76,19 @@ def predict():
         print("After converting dates - columns:", list(input_data.columns))
         print("After converting dates:", input_data.to_dict())
 
-        # Scale numerical data
+        # Scale numerical data using NumPy array
         print("Numerical columns for scaling:", numerical_cols)
-        input_data_numerical = input_data[numerical_cols]
-        print("Input data for scaler - columns:", list(input_data_numerical.columns))
+        input_data_numerical = input_data[numerical_cols].values  # Convert to NumPy array
+        print("Input data for scaler - shape:", input_data_numerical.shape)
         input_data_numerical = scaler.transform(input_data_numerical)
         input_data[numerical_cols] = input_data_numerical
         print("After scaling numerical data - columns:", list(input_data.columns))
         print("After scaling numerical data:", input_data.to_dict())
 
-        # Reorder input_data to match the expected feature order
+        # Reorder input_data to match the expected feature order and convert to NumPy array
         print("Reordering to match expected features:", expected_features)
-        input_data = input_data[expected_features]
-        print("After reordering features - columns:", list(input_data.columns))
-        print("After reordering features:", input_data.to_dict())
+        input_data = input_data[expected_features].values  # Convert to NumPy array
+        print("After reordering features - shape:", input_data.shape)
 
         # Predict using Logistic Regression
         if hasattr(best_model, 'predict_proba'):
