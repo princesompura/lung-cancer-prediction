@@ -1,4 +1,3 @@
-// /frontend/src/pages/Home.jsx
 import PredictionForm from "../components/PredictionForm";
 import PredictionResult from "../components/PredictionResult";
 import { useState } from "react";
@@ -17,7 +16,7 @@ function Home() {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-purple-600"
+          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-black to-purple-600"
         >
           Lung Cancer Survival Prediction
         </motion.h1>
