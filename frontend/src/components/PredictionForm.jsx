@@ -1,11 +1,12 @@
+// /frontend/src/components/PredictionForm.jsx
 import { useState } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, User, Heart, Activity, Calendar } from "lucide-react"; // Add missing icons
 import StepperProgress from "./StepperProgress";
 import StepContent from "./StepContent";
 import NavigationButtons from "./NavigationButtons";
-import { User, Heart, Activity, Calendar } from "lucide-react";
+import { supabase } from "../supabaseClient"; // Import Supabase client
 
 const PredictionForm = ({ setPrediction, setError, setIsLoading, isLoading }) => {
   const initialFormData = {
@@ -136,7 +137,18 @@ const PredictionForm = ({ setPrediction, setError, setIsLoading, isLoading }) =>
         formData,
         { headers: { "Content-Type": "application/json" } }
       );
-      setPrediction(response.data.prediction);
+      const predictionResult = response.data.prediction;
+      setPrediction(predictionResult);
+
+      // Save the form data and prediction to Supabase
+      const { error: supabaseError } = await supabase
+        .from("predictions")
+        .insert([{ form_data: formData, prediction: predictionResult }]);
+
+      if (supabaseError) {
+        console.error("Error saving to Supabase:", supabaseError);
+        setError("Prediction successful, but failed to save to database.");
+      }
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred during prediction");
     } finally {
