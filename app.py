@@ -8,7 +8,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://localhost:5173", "https://lung-cancer-frontend.onrender.com"],
+        "origins": ["http://localhost:5173", "https://lung-cancer-prediction-1-nid3.onrender.com"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
